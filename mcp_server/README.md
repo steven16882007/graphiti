@@ -1,185 +1,179 @@
-# Graphiti MCP Server
+# Graphiti MCP 伺服器
 
-Graphiti is a framework for building and querying temporally-aware knowledge graphs, specifically tailored for AI agents
-operating in dynamic environments. Unlike traditional retrieval-augmented generation (RAG) methods, Graphiti
-continuously integrates user interactions, structured and unstructured enterprise data, and external information into a
-coherent, queryable graph. The framework supports incremental data updates, efficient retrieval, and precise historical
-queries without requiring complete graph recomputation, making it suitable for developing interactive, context-aware AI
-applications.
+Graphiti 是一個專為在動態環境中運行的 AI 代理而設計的時間感知知識圖譜建構和查詢框架。與傳統的檢索增強生成 (RAG) 方法不同，Graphiti 持續整合用戶互動、結構化和非結構化企業數據以及外部資訊，形成一個連貫且可查詢的圖譜。該框架支援增量數據更新、高效檢索和精確的歷史查詢，無需完整重新計算圖譜，使其適合開發互動式、上下文感知的 AI 應用程式。
 
-This is an experimental Model Context Protocol (MCP) server implementation for Graphiti. The MCP server exposes
-Graphiti's key functionality through the MCP protocol, allowing AI assistants to interact with Graphiti's knowledge
-graph capabilities.
+這是 Graphiti 的實驗性模型上下文協議 (MCP) 伺服器實作。MCP 伺服器透過 MCP 協議公開 Graphiti 的核心功能，讓 AI 助手能夠與 Graphiti 的知識圖譜功能進行互動。
 
-## Features
+## 功能特色
 
-The Graphiti MCP server exposes the following key high-level functions of Graphiti:
+Graphiti MCP 伺服器公開了 Graphiti 的以下核心高階功能：
 
-- **Episode Management**: Add, retrieve, and delete episodes (text, messages, or JSON data)
-- **Entity Management**: Search and manage entity nodes and relationships in the knowledge graph
-- **Search Capabilities**: Search for facts (edges) and node summaries using semantic and hybrid search
-- **Group Management**: Organize and manage groups of related data with group_id filtering
-- **Graph Maintenance**: Clear the graph and rebuild indices
+- **情節管理**：新增、檢索和刪除情節（文字、訊息或 JSON 數據）
+- **實體管理**：搜尋和管理知識圖譜中的實體節點和關係
+- **搜尋功能**：使用語義和混合搜尋來搜尋事實（邊）和節點摘要
+- **群組管理**：使用 group_id 過濾來組織和管理相關數據群組
+- **圖譜維護**：清除圖譜並重建索引
 
-## Quick Start
+## 快速開始
 
-### Clone the Graphiti GitHub repo
+### 複製 Graphiti GitHub 儲存庫
 
 ```bash
 git clone https://github.com/getzep/graphiti.git
 ```
 
-or
+或
 
 ```bash
 gh repo clone getzep/graphiti
 ```
 
-### For Claude Desktop and other `stdio` only clients
+### 適用於 Claude Desktop 和其他僅支援 `stdio` 的客戶端
 
-1. Note the full path to this directory.
+1. 記下此目錄的完整路徑。
 
 ```
 cd graphiti && pwd
 ```
 
-2. Install the [Graphiti prerequisites](#prerequisites).
+2. 安裝 [Graphiti 先決條件](#先決條件)。
 
-3. Configure Claude, Cursor, or other MCP client to use [Graphiti with a `stdio` transport](#integrating-with-mcp-clients). See the client documentation on where to find their MCP configuration files.
+3. 配置 Claude、Cursor 或其他 MCP 客戶端以使用 [Graphiti 與 `stdio` 傳輸](#與-mcp-客戶端整合)。請參閱客戶端文件以了解在哪裡找到其 MCP 配置檔案。
 
-### For Cursor and other `sse`-enabled clients
+### 適用於 Cursor 和其他支援 `sse` 的客戶端
 
-1. Change directory to the `mcp_server` directory
+1. 切換到 `mcp_server` 目錄
 
 `cd graphiti/mcp_server`
 
-2. Start the service using Docker Compose
+2. 使用 Docker Compose 啟動服務
 
 `docker compose up`
 
-3. Point your MCP client to `http://localhost:8000/sse`
+3. 將您的 MCP 客戶端指向 `http://localhost:8000/sse`
 
-## Installation
+## 安裝
 
-### Prerequisites
+### 先決條件
 
-1. Ensure you have Python 3.10 or higher installed.
-2. A running Neo4j database (version 5.26 or later required)
-3. OpenAI API key for LLM operations
+1. 確保您已安裝 Python 3.10 或更高版本。
+2. 運行中的 Neo4j 資料庫（需要 5.26 或更高版本）
+3. 用於 LLM 操作的 OpenAI API 金鑰
 
-### Setup
+### 設置
 
-1. Clone the repository and navigate to the mcp_server directory
-2. Use `uv` to create a virtual environment and install dependencies:
+1. 複製儲存庫並導航到 mcp_server 目錄
+2. 使用 `uv` 創建虛擬環境並安裝依賴項：
 
 ```bash
-# Install uv if you don't have it already
+# 如果您還沒有安裝 uv，請先安裝
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Create a virtual environment and install dependencies in one step
+# 一步創建虛擬環境並安裝依賴項
 uv sync
 ```
 
-## Configuration
+## 配置
 
-The server uses the following environment variables:
+伺服器使用以下環境變數：
 
-- `NEO4J_URI`: URI for the Neo4j database (default: `bolt://localhost:7687`)
-- `NEO4J_USER`: Neo4j username (default: `neo4j`)
-- `NEO4J_PASSWORD`: Neo4j password (default: `demodemo`)
-- `OPENAI_API_KEY`: OpenAI API key (required for LLM operations)
-- `OPENAI_BASE_URL`: Optional base URL for OpenAI API
-- `MODEL_NAME`: OpenAI model name to use for LLM operations.
-- `SMALL_MODEL_NAME`: OpenAI model name to use for smaller LLM operations.
-- `LLM_TEMPERATURE`: Temperature for LLM responses (0.0-2.0).
-- `AZURE_OPENAI_ENDPOINT`: Optional Azure OpenAI LLM endpoint URL
-- `AZURE_OPENAI_DEPLOYMENT_NAME`: Optional Azure OpenAI LLM deployment name
-- `AZURE_OPENAI_API_VERSION`: Optional Azure OpenAI LLM API version
-- `AZURE_OPENAI_EMBEDDING_API_KEY`: Optional Azure OpenAI Embedding deployment key (if other than `OPENAI_API_KEY`)
-- `AZURE_OPENAI_EMBEDDING_ENDPOINT`: Optional Azure OpenAI Embedding endpoint URL
-- `AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME`: Optional Azure OpenAI embedding deployment name
-- `AZURE_OPENAI_EMBEDDING_API_VERSION`: Optional Azure OpenAI API version
-- `AZURE_OPENAI_USE_MANAGED_IDENTITY`: Optional use Azure Managed Identities for authentication
-- `SEMAPHORE_LIMIT`: Episode processing concurrency. See [Concurrency and LLM Provider 429 Rate Limit Errors](#concurrency-and-llm-provider-429-rate-limit-errors)
+- `NEO4J_URI`：Neo4j 資料庫的 URI（預設：`bolt://localhost:7687`）
+- `NEO4J_USER`：Neo4j 使用者名稱（預設：`neo4j`）
+- `NEO4J_PASSWORD`：Neo4j 密碼（預設：`demodemo`）
+- `OPENAI_API_KEY`：OpenAI API 金鑰（LLM 操作必需）
+- `OPENAI_BASE_URL`：OpenAI API 的可選基礎 URL
+- `MODEL_NAME`：用於 LLM 操作的 OpenAI 模型名稱
+- `SMALL_MODEL_NAME`：用於較小 LLM 操作的 OpenAI 模型名稱
+- `LLM_TEMPERATURE`：LLM 回應的溫度（0.0-2.0）
+- `AZURE_OPENAI_ENDPOINT`：可選的 Azure OpenAI LLM 端點 URL
+- `AZURE_OPENAI_DEPLOYMENT_NAME`：可選的 Azure OpenAI LLM 部署名稱
+- `AZURE_OPENAI_API_VERSION`：可選的 Azure OpenAI LLM API 版本
+- `AZURE_OPENAI_EMBEDDING_API_KEY`：可選的 Azure OpenAI 嵌入部署金鑰（如果與 `OPENAI_API_KEY` 不同）
+- `AZURE_OPENAI_EMBEDDING_ENDPOINT`：可選的 Azure OpenAI 嵌入端點 URL
+- `AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME`：可選的 Azure OpenAI 嵌入部署名稱
+- `AZURE_OPENAI_EMBEDDING_API_VERSION`：可選的 Azure OpenAI API 版本
+- `AZURE_OPENAI_USE_MANAGED_IDENTITY`：可選使用 Azure 受控身分進行驗證
+- `SEMAPHORE_LIMIT`：情節處理並發性。請參閱 [並發性和 LLM 提供者 429 速率限制錯誤](#並發性和-llm-提供者-429-速率限制錯誤)
+- `VSCODE_UI_BRIDGE_WS`：VS Code UI Bridge 整合的可選 WebSocket URL（例如：`ws://127.0.0.1:5310?token=YOUR_TOKEN`）
 
-You can set these variables in a `.env` file in the project directory.
+您可以在專案目錄中的 `.env` 檔案中設置這些變數。
 
-## Running the Server
+## 運行伺服器
 
-To run the Graphiti MCP server directly using `uv`:
+使用 `uv` 直接運行 Graphiti MCP 伺服器：
 
 ```bash
 uv run graphiti_mcp_server.py
 ```
 
-With options:
+使用選項：
 
 ```bash
 uv run graphiti_mcp_server.py --model gpt-4.1-mini --transport sse
 ```
 
-Available arguments:
+可用參數：
 
-- `--model`: Overrides the `MODEL_NAME` environment variable.
-- `--small-model`: Overrides the `SMALL_MODEL_NAME` environment variable.
-- `--temperature`: Overrides the `LLM_TEMPERATURE` environment variable.
-- `--transport`: Choose the transport method (sse or stdio, default: sse)
-- `--group-id`: Set a namespace for the graph (optional). If not provided, defaults to "default".
-- `--destroy-graph`: If set, destroys all Graphiti graphs on startup.
-- `--use-custom-entities`: Enable entity extraction using the predefined ENTITY_TYPES
+- `--model`：覆蓋 `MODEL_NAME` 環境變數
+- `--small-model`：覆蓋 `SMALL_MODEL_NAME` 環境變數
+- `--temperature`：覆蓋 `LLM_TEMPERATURE` 環境變數
+- `--transport`：選擇傳輸方法（sse 或 stdio，預設：sse）
+- `--group-id`：為圖譜設置命名空間（可選）。如果未提供，預設為 "default"
+- `--destroy-graph`：如果設置，在啟動時銷毀所有 Graphiti 圖譜
+- `--use-custom-entities`：啟用使用預定義 ENTITY_TYPES 的實體提取
 
-### Concurrency and LLM Provider 429 Rate Limit Errors
+### 並發性和 LLM 提供者 429 速率限制錯誤
 
-Graphiti's ingestion pipelines are designed for high concurrency, controlled by the `SEMAPHORE_LIMIT` environment variable.
-By default, `SEMAPHORE_LIMIT` is set to `10` concurrent operations to help prevent `429` rate limit errors from your LLM provider. If you encounter such errors, try lowering this value.
+Graphiti 的攝取管道設計為高並發性，由 `SEMAPHORE_LIMIT` 環境變數控制。
+預設情況下，`SEMAPHORE_LIMIT` 設置為 `10` 個並發操作，以幫助防止來自您的 LLM 提供者的 `429` 速率限制錯誤。如果您遇到此類錯誤，請嘗試降低此值。
 
-If your LLM provider allows higher throughput, you can increase `SEMAPHORE_LIMIT` to boost episode ingestion performance.
+如果您的 LLM 提供者允許更高的吞吐量，您可以增加 `SEMAPHORE_LIMIT` 以提升情節攝取性能。
 
-### Docker Deployment
+### Docker 部署
 
-The Graphiti MCP server can be deployed using Docker. The Dockerfile uses `uv` for package management, ensuring
-consistent dependency installation.
+Graphiti MCP 伺服器可以使用 Docker 部署。Dockerfile 使用 `uv` 進行套件管理，確保
+一致的依賴項安裝。
 
-#### Environment Configuration
+#### 環境配置
 
-Before running the Docker Compose setup, you need to configure the environment variables. You have two options:
+在運行 Docker Compose 設置之前，您需要配置環境變數。您有兩個選項：
 
-1. **Using a .env file** (recommended):
+1. **使用 .env 檔案**（推薦）：
 
-   - Copy the provided `.env.example` file to create a `.env` file:
+   - 複製提供的 `.env.example` 檔案來創建 `.env` 檔案：
      ```bash
      cp .env.example .env
      ```
-   - Edit the `.env` file to set your OpenAI API key and other configuration options:
+   - 編輯 `.env` 檔案以設置您的 OpenAI API 金鑰和其他配置選項：
      ```
-     # Required for LLM operations
+     # LLM 操作必需
      OPENAI_API_KEY=your_openai_api_key_here
      MODEL_NAME=gpt-4.1-mini
-     # Optional: OPENAI_BASE_URL only needed for non-standard OpenAI endpoints
+     # 可選：OPENAI_BASE_URL 僅在非標準 OpenAI 端點時需要
      # OPENAI_BASE_URL=https://api.openai.com/v1
      ```
-   - The Docker Compose setup is configured to use this file if it exists (it's optional)
+   - Docker Compose 設置配置為使用此檔案（如果存在）（這是可選的）
 
-2. **Using environment variables directly**:
-   - You can also set the environment variables when running the Docker Compose command:
+2. **直接使用環境變數**：
+   - 您也可以在運行 Docker Compose 命令時設置環境變數：
      ```bash
      OPENAI_API_KEY=your_key MODEL_NAME=gpt-4.1-mini docker compose up
      ```
 
-#### Neo4j Configuration
+#### Neo4j 配置
 
-The Docker Compose setup includes a Neo4j container with the following default configuration:
+Docker Compose 設置包含一個具有以下預設配置的 Neo4j 容器：
 
-- Username: `neo4j`
-- Password: `demodemo`
-- URI: `bolt://neo4j:7687` (from within the Docker network)
-- Memory settings optimized for development use
+- 使用者名稱：`neo4j`
+- 密碼：`demodemo`
+- URI：`bolt://neo4j:7687`（從 Docker 網路內部）
+- 為開發使用優化的記憶體設置
 
-#### Running with Docker Compose
+#### 使用 Docker Compose 運行
 
-A Graphiti MCP container is available at: `zepai/knowledge-graph-mcp`. The latest build of this container is used by the Compose setup below.
+Graphiti MCP 容器可在以下位置獲得：`zepai/knowledge-graph-mcp`。下面的 Compose 設置使用此容器的最新構建。
 
-Start the services using Docker Compose:
+使用 Docker Compose 啟動服務：
 
 ```bash
 docker compose up
@@ -252,24 +246,71 @@ For SSE transport (HTTP-based), you can use this configuration:
 }
 ```
 
-## Available Tools
+## 可用工具
 
-The Graphiti MCP server exposes the following tools:
+Graphiti MCP 伺服器公開了以下工具：
 
-- `add_episode`: Add an episode to the knowledge graph (supports text, JSON, and message formats)
-- `search_nodes`: Search the knowledge graph for relevant node summaries
-- `search_facts`: Search the knowledge graph for relevant facts (edges between entities)
-- `delete_entity_edge`: Delete an entity edge from the knowledge graph
-- `delete_episode`: Delete an episode from the knowledge graph
-- `get_entity_edge`: Get an entity edge by its UUID
-- `get_episodes`: Get the most recent episodes for a specific group
-- `clear_graph`: Clear all data from the knowledge graph and rebuild indices
-- `get_status`: Get the status of the Graphiti MCP server and Neo4j connection
+- `add_episode`：向知識圖譜添加情節（支援文字、JSON 和訊息格式）
+- `search_nodes`：在知識圖譜中搜尋相關節點摘要
+- `search_facts`：在知識圖譜中搜尋相關事實（實體之間的邊）
+- `delete_entity_edge`：從知識圖譜中刪除實體邊
+- `delete_episode`：從知識圖譜中刪除情節
+- `get_entity_edge`：通過其 UUID 獲取實體邊
+- `get_episodes`：獲取特定群組的最新情節
+- `clear_graph`：清除知識圖譜中的所有數據並重建索引
+- `get_status`：獲取 Graphiti MCP 伺服器和 Neo4j 連接的狀態
 
-## Working with JSON Data
+### VS Code 整合工具（可選）
 
-The Graphiti MCP server can process structured JSON data through the `add_episode` tool with `source="json"`. This
-allows you to automatically extract entities and relationships from structured data:
+當安裝並配置了 VS Code UI Bridge 擴展時，以下額外工具可用：
+
+- `vscode_get_context`：獲取當前 VS Code 上下文（工作區、分頁、編輯器、診斷、git 狀態）
+- `vscode_open_file`：通過絕對路徑在 VS Code 中開啟檔案
+- `vscode_reveal`：導航到檔案中的特定行和字符位置
+- `vscode_apply_edit`：對檔案中的特定範圍應用文字編輯
+
+## VS Code 整合設置
+
+Graphiti MCP 伺服器包含可選的 VS Code 整合，透過 VS Code UI Bridge 擴展實現。這允許 AI 助手查看並與您當前的 VS Code 工作區互動。
+
+### 先決條件
+
+1. 在 VS Code 中安裝 VS Code UI Bridge 擴展
+2. 擴展將啟動 WebSocket 伺服器（通常在 port 5310）
+3. 從擴展的輸出面板記下 WebSocket URL 和 token
+
+### 配置
+
+設置 `VSCODE_UI_BRIDGE_WS` 環境變數：
+
+```bash
+# 本地開發
+export VSCODE_UI_BRIDGE_WS="ws://127.0.0.1:5310?token=YOUR_TOKEN"
+
+# Docker 部署
+export VSCODE_UI_BRIDGE_WS="ws://host.docker.internal:5310?token=YOUR_TOKEN"
+```
+
+或將其添加到您的 `.env` 檔案中：
+
+```
+VSCODE_UI_BRIDGE_WS=ws://127.0.0.1:5310?token=YOUR_TOKEN
+```
+
+### 測試整合
+
+您可以使用提供的測試腳本來測試 VS Code Bridge 連接：
+
+```bash
+uv run test_vscode_integration.py
+```
+
+這將驗證 WebSocket 連接是否正常工作，並顯示有關您當前 VS Code 工作區的資訊。
+
+## 處理 JSON 數據
+
+Graphiti MCP 伺服器可以透過 `add_episode` 工具使用 `source="json"` 處理結構化 JSON 數據。這
+允許您自動從結構化數據中提取實體和關係：
 
 ```
 
@@ -282,26 +323,38 @@ source_description="CRM data"
 
 ```
 
-## Integrating with the Cursor IDE
+## 範例：與 Augment 整合
 
-To integrate the Graphiti MCP Server with the Cursor IDE, follow these steps:
+要將 Graphiti MCP 伺服器與 Augment 整合，請按照以下步驟操作：
 
-1. Run the Graphiti MCP server using the SSE transport:
-
-```bash
-python graphiti_mcp_server.py --transport sse --use-custom-entities --group-id <your_group_id>
-```
-
-Hint: specify a `group_id` to namespace graph data. If you do not specify a `group_id`, the server will use "default" as the group_id.
-
-or
+1. 啟動 Graphiti MCP 伺服器：
 
 ```bash
+# 使用 uv 直接運行
+uv run graphiti_mcp_server.py --group-id <your_group_id>
+
+# 或使用 Docker
 docker compose up
 ```
 
-2. Configure Cursor to connect to the Graphiti MCP server.
+提示：指定 `group_id` 來為圖譜數據設置命名空間。如果您不指定 `group_id`，伺服器將使用 "default" 作為 group_id。
 
+2. 配置 Augment 連接到 Graphiti MCP 伺服器。
+
+對於 stdio 傳輸（預設）：
+```json
+{
+  "mcpServers": {
+    "graphiti-memory": {
+      "command": "uv",
+      "args": ["run", "graphiti_mcp_server.py"],
+      "cwd": "/path/to/graphiti/mcp_server"
+    }
+  }
+}
+```
+
+對於 SSE 傳輸：
 ```json
 {
   "mcpServers": {
@@ -312,85 +365,111 @@ docker compose up
 }
 ```
 
-3. Add the Graphiti rules to Cursor's User Rules. See [cursor_rules.md](cursor_rules.md) for details.
+3. 配置您的 AI 代理使用 Graphiti 使用指南。請參閱 [mcp_usage_guide.md](mcp_usage_guide.md) 了解詳細資訊。
 
-4. Kick off an agent session in Cursor.
+4. 可選：如果您使用 VS Code，請設置 VS Code UI Bridge 整合以獲得上下文感知協助。
 
-The integration enables AI assistants in Cursor to maintain persistent memory through Graphiti's knowledge graph
-capabilities.
+此整合使 Augment 中的 AI 助手能夠透過 Graphiti 的知識圖譜功能維護持久記憶，並在配置了 VS Code Bridge 時提供上下文感知的協助。
 
-## Integrating with Claude Desktop (Docker MCP Server)
+## 與 MCP 客戶端整合
 
-The Graphiti MCP Server container uses the SSE MCP transport. Claude Desktop does not natively support SSE, so you'll need to use a gateway like `mcp-remote`.
+### 使用 stdio 傳輸（推薦）
 
-1.  **Run the Graphiti MCP server using SSE transport**:
+大多數 MCP 客戶端（如 Claude Desktop、Augment）支援 stdio 傳輸：
+
+```json
+{
+  "mcpServers": {
+    "graphiti-memory": {
+      "command": "uv",
+      "args": ["run", "graphiti_mcp_server.py"],
+      "cwd": "/path/to/graphiti/mcp_server"
+    }
+  }
+}
+```
+
+### 使用 SSE 傳輸（Docker 部署）
+
+對於支援 SSE 的客戶端或需要遠端存取的情況：
+
+1.  **運行 Graphiti MCP 伺服器使用 SSE 傳輸**：
 
     ```bash
     docker compose up
     ```
 
-2.  **(Optional) Install `mcp-remote` globally**:
-    If you prefer to have `mcp-remote` installed globally, or if you encounter issues with `npx` fetching the package, you can install it globally. Otherwise, `npx` (used in the next step) will handle it for you.
-
-    ```bash
-    npm install -g mcp-remote
-    ```
-
-3.  **Configure Claude Desktop**:
-    Open your Claude Desktop configuration file (usually `claude_desktop_config.json`) and add or modify the `mcpServers` section as follows:
+2.  **直接連接**（支援 SSE 的客戶端）：
 
     ```json
     {
       "mcpServers": {
         "graphiti-memory": {
-          // You can choose a different name if you prefer
-          "command": "npx", // Or the full path to mcp-remote if npx is not in your PATH
+          "url": "http://localhost:8000/sse"
+        }
+      }
+    }
+    ```
+
+3.  **使用 mcp-remote 閘道**（不支援 SSE 的客戶端如 Claude Desktop）：
+
+    安裝 mcp-remote（可選，npx 會自動處理）：
+    ```bash
+    npm install -g mcp-remote
+    ```
+
+    配置客戶端：
+    ```json
+    {
+      "mcpServers": {
+        "graphiti-memory": {
+          "command": "npx",
           "args": [
             "mcp-remote",
-            "http://localhost:8000/sse" // Ensure this matches your Graphiti server's SSE endpoint
+            "http://localhost:8000/sse"
           ]
         }
       }
     }
     ```
 
-    If you already have an `mcpServers` entry, add `graphiti-memory` (or your chosen name) as a new key within it.
+    如果您已有 `mcpServers` 條目，請將 `graphiti-memory`（或您選擇的名稱）作為新鍵添加其中。
 
-4.  **Restart Claude Desktop** for the changes to take effect.
+4.  **重新啟動您的 MCP 客戶端** 以使變更生效。
 
-## Requirements
+## 系統需求
 
-- Python 3.10 or higher
-- Neo4j database (version 5.26 or later required)
-- OpenAI API key (for LLM operations and embeddings)
-- MCP-compatible client
+- Python 3.10 或更高版本
+- Neo4j 資料庫（需要 5.26 或更高版本）
+- OpenAI API 金鑰（用於 LLM 操作和嵌入）
+- MCP 相容客戶端
 
-## Telemetry
+## 遙測
 
-The Graphiti MCP server uses the Graphiti core library, which includes anonymous telemetry collection. When you initialize the Graphiti MCP server, anonymous usage statistics are collected to help improve the framework.
+Graphiti MCP 伺服器使用 Graphiti 核心函式庫，其中包含匿名遙測收集。當您初始化 Graphiti MCP 伺服器時，會收集匿名使用統計資料以幫助改進框架。
 
-### What's Collected
+### 收集的內容
 
-- Anonymous identifier and system information (OS, Python version)
-- Graphiti version and configuration choices (LLM provider, database backend, embedder type)
-- **No personal data, API keys, or actual graph content is ever collected**
+- 匿名識別符和系統資訊（作業系統、Python 版本）
+- Graphiti 版本和配置選擇（LLM 提供者、資料庫後端、嵌入器類型）
+- **絕不收集個人數據、API 金鑰或實際圖譜內容**
 
-### How to Disable
+### 如何停用
 
-To disable telemetry in the MCP server, set the environment variable:
+要在 MCP 伺服器中停用遙測，請設置環境變數：
 
 ```bash
 export GRAPHITI_TELEMETRY_ENABLED=false
 ```
 
-Or add it to your `.env` file:
+或將其添加到您的 `.env` 檔案中：
 
 ```
 GRAPHITI_TELEMETRY_ENABLED=false
 ```
 
-For complete details about what's collected and why, see the [Telemetry section in the main Graphiti README](../README.md#telemetry).
+有關收集內容和原因的完整詳細資訊，請參閱 [主要 Graphiti README 中的遙測部分](../README.md#telemetry)。
 
-## License
+## 授權
 
-This project is licensed under the same license as the parent Graphiti project.
+此專案使用與父專案 Graphiti 相同的授權。
