@@ -20,6 +20,7 @@ The Graphiti MCP server exposes the following key high-level functions of Graphi
 - **Search Capabilities**: Search for facts (edges) and node summaries using semantic and hybrid search
 - **Group Management**: Organize and manage groups of related data with group_id filtering
 - **Graph Maintenance**: Clear the graph and rebuild indices
+- **VS Code Integration**: Direct integration with VS Code through the UI Bridge extension (optional)
 
 ## Quick Start
 
@@ -101,6 +102,7 @@ The server uses the following environment variables:
 - `AZURE_OPENAI_EMBEDDING_API_VERSION`: Optional Azure OpenAI API version
 - `AZURE_OPENAI_USE_MANAGED_IDENTITY`: Optional use Azure Managed Identities for authentication
 - `SEMAPHORE_LIMIT`: Episode processing concurrency. See [Concurrency and LLM Provider 429 Rate Limit Errors](#concurrency-and-llm-provider-429-rate-limit-errors)
+- `VSCODE_UI_BRIDGE_WS`: Optional WebSocket URL for VS Code UI Bridge integration (e.g., `ws://127.0.0.1:5310?token=YOUR_TOKEN`)
 
 You can set these variables in a `.env` file in the project directory.
 
@@ -266,6 +268,53 @@ The Graphiti MCP server exposes the following tools:
 - `clear_graph`: Clear all data from the knowledge graph and rebuild indices
 - `get_status`: Get the status of the Graphiti MCP server and Neo4j connection
 
+### VS Code Integration Tools (Optional)
+
+When the VS Code UI Bridge extension is installed and configured, the following additional tools are available:
+
+- `vscode_get_context`: Get current VS Code context (workspace, tabs, editors, diagnostics, git status)
+- `vscode_open_file`: Open a file in VS Code by absolute path
+- `vscode_reveal`: Navigate to a specific line and character position in a file
+- `vscode_apply_edit`: Apply text edits to a specific range in a file
+
+## VS Code Integration Setup
+
+The Graphiti MCP server includes optional VS Code integration through the VS Code UI Bridge extension. This allows AI assistants to see and interact with your current VS Code workspace.
+
+### Prerequisites
+
+1. Install the VS Code UI Bridge extension in VS Code
+2. The extension will start a WebSocket server (typically on port 5310)
+3. Note the WebSocket URL and token from the extension's output panel
+
+### Configuration
+
+Set the `VSCODE_UI_BRIDGE_WS` environment variable:
+
+```bash
+# For local development
+export VSCODE_UI_BRIDGE_WS="ws://127.0.0.1:5310?token=YOUR_TOKEN"
+
+# For Docker deployment
+export VSCODE_UI_BRIDGE_WS="ws://host.docker.internal:5310?token=YOUR_TOKEN"
+```
+
+Or add it to your `.env` file:
+
+```
+VSCODE_UI_BRIDGE_WS=ws://127.0.0.1:5310?token=YOUR_TOKEN
+```
+
+### Testing the Integration
+
+You can test the VS Code Bridge connection using the provided test script:
+
+```bash
+uv run test_vscode_integration.py
+```
+
+This will verify that the WebSocket connection is working and display information about your current VS Code workspace.
+
 ## Working with JSON Data
 
 The Graphiti MCP server can process structured JSON data through the `add_episode` tool with `source="json"`. This
@@ -282,7 +331,7 @@ source_description="CRM data"
 
 ```
 
-## Integrating with the Cursor IDE
+## Example: Integrating with Cursor IDE
 
 To integrate the Graphiti MCP Server with the Cursor IDE, follow these steps:
 
@@ -312,7 +361,7 @@ docker compose up
 }
 ```
 
-3. Add the Graphiti rules to Cursor's User Rules. See [cursor_rules.md](cursor_rules.md) for details.
+3. Configure your AI agent with Graphiti usage guidelines. See [mcp_usage_guide.md](mcp_usage_guide.md) for details.
 
 4. Kick off an agent session in Cursor.
 

@@ -1,6 +1,9 @@
+name: graphiti-mcp
+
 services:
   neo4j:
     image: neo4j:5.26.0
+    container_name: graphiti-neo4j
     ports:
       - "7474:7474" # HTTP
       - "7687:7687" # Bolt
@@ -24,6 +27,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: graphiti-mcp-server
     env_file:
       - path: .env
         required: false # Makes the file optional. Default value is 'true'

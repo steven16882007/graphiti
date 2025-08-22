@@ -1,9 +1,11 @@
-## Instructions for Using Graphiti's MCP Tools for Agent Memory
+## MCP Agent Usage Guide for Graphiti Memory Tools
+
+This guide provides instructions for AI agents using Graphiti's MCP tools for persistent memory management.
 
 ### Before Starting Any Task
 
-- **Always search first:** Use the `search_nodes` tool to look for relevant preferences and procedures before beginning work.
-- **Search for facts too:** Use the `search_facts` tool to discover relationships and factual information that may be relevant to your task.
+- **Always search first:** Use the `search_memory_nodes` tool to look for relevant preferences and procedures before beginning work.
+- **Search for facts too:** Use the `search_memory_facts` tool to discover relationships and factual information that may be relevant to your task.
 - **Filter by entity type:** Specify `Preference`, `Procedure`, or `Requirement` in your node search to get targeted results.
 - **Review all matches:** Carefully examine any preferences, procedures, or facts that match your current task.
 
@@ -30,5 +32,14 @@
 - **Use `center_node_uuid`:** When exploring related information, center your search around a specific node.
 - **Prioritize specific matches:** More specific information takes precedence over general information.
 - **Be proactive:** If you notice patterns in user behavior, consider storing them as preferences or procedures.
+
+### VS Code Integration (When Available)
+
+When the VS Code UI Bridge extension is configured, you can also:
+
+- **Get current context:** Use `vscode_get_context` to see the current VS Code workspace, open files, and diagnostics.
+- **Navigate efficiently:** Use `vscode_open_file` and `vscode_reveal` to guide users to specific files and locations.
+- **Apply targeted edits:** Use `vscode_apply_edit` for precise code modifications based on current context.
+- **Work with visible content:** Reference what the user can actually see in their editor when providing assistance.
 
 **Remember:** The knowledge graph is your memory. Use it consistently to provide personalized assistance that respects the user's established preferences, procedures, and factual context.

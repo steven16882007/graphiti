@@ -551,6 +551,11 @@ Key capabilities:
 3. Find relevant facts (relationships between entities) with search_facts
 4. Retrieve specific entity edges or episodes by UUID
 5. Manage the knowledge graph with tools like delete_episode, delete_entity_edge, and clear_graph
+6. VS Code integration (when available):
+   - Get current VS Code context with vscode_get_context
+   - Open files with vscode_open_file
+   - Navigate to specific positions with vscode_reveal
+   - Apply text edits with vscode_apply_edit
 
 The server connects to a database for persistent storage and uses language models for certain operations. 
 Each piece of information is organized by group_id, allowing you to maintain separate knowledge domains.
@@ -567,6 +572,16 @@ mcp = FastMCP(
     'Graphiti Agent Memory',
     instructions=GRAPHITI_MCP_INSTRUCTIONS,
 )
+
+# Register VS Code Bridge tools
+try:
+    from tools.vscode_tools import register_vscode_tools
+    register_vscode_tools(mcp)
+    logger.info('VS Code Bridge tools registered successfully')
+except ImportError as e:
+    logger.warning(f'VS Code Bridge tools not available: {e}')
+except Exception as e:
+    logger.error(f'Failed to register VS Code Bridge tools: {e}')
 
 # Initialize Graphiti client
 graphiti_client: Graphiti | None = None
